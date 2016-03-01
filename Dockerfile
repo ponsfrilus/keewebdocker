@@ -22,7 +22,7 @@
 #
 # Dev:
 #   - `docker build -t ponsfrilus/keewebdocker .`
-#   - `docker rm keewebdocker && docker run -d -p 443:443 --name keewebdocker -t ponsfrilus/keewebdocker`
+#   - `docker rm -f keewebdocker && docker run -d -p 443:443 --name keewebdocker -t ponsfrilus/keewebdocker`
 #   - `DEBUG: docker run -p 443:443 -it --rm ponsfrilus/keewebdocker bash`
 
 FROM nginx
@@ -30,14 +30,15 @@ MAINTAINER @ponsfrilus
 
 # Make the container ready to install new packages
 RUN apt-get update
-RUN apt-get -y install wget zip
+RUN apt-get -y install curl wget zip
 
 # Create dev dir
 RUN mkdir -p /srv/KeeWeb
 
-# Get KeeWeb app, unzip it and link it to the defaul nginix dir
-RUN wget -O /srv/KeeWeb.zip https://github.com/antelle/keeweb/releases/download/v1.0.4/KeeWeb.linux.x64.zip
-RUN unzip /srv/KeeWeb.zip -d /srv/KeeWeb
+# Get the latest KeeWeb app, unzip it and link it to the defaul nginix dir
+# RUN echo $(curl -s https://api.github.com/repos/antelle/keeweb/releases/latest | grep browser_download_url | sed -n '4p' | cut -d '"' -f 4)
+RUN wget -O /srv/UpdateDesktop.zip $(curl -s https://api.github.com/repos/antelle/keeweb/releases/latest | grep browser_download_url | sed -n '4p' | cut -d '"' -f 4)
+RUN unzip /srv/UpdateDesktop.zip -d /srv/KeeWeb
 RUN rm -rf /usr/share/nginx/html/
 RUN ln -s /srv/KeeWeb/resources/app/ /usr/share/nginx/
 RUN mv /usr/share/nginx/app /usr/share/nginx/html
@@ -52,7 +53,7 @@ RUN openssl req \
     -days 365 \
     -nodes \
     -x509 \
-    -subj "/C=CH/ST=Foo/L=Bar/O=Docker/CN=localhost" \
+    -subj "/C=IT/ST=Kee/L=Web/O=Docker/CN=localhost" \
     -keyout /etc/nginx/ssl/nginx.key \
     -out /etc/nginx/ssl/nginx.crt
 
